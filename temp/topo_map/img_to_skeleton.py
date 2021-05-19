@@ -62,7 +62,7 @@ def img2skeleton(im_path):
 def preprocess(im_path):
 	im = cv2.imread(im_path, 0)
 	h, w = im.shape
-	if h > 1000 and w > 1000:
+	if h > 5000 and w > 5000:
 		print('resize img, original image is too large ...')
 		im = cv2.resize(im, (int(w*.1), int(h*.1)), interpolation=cv2.INTER_NEAREST)
 	print('im.shape = {}'.format(im.shape))

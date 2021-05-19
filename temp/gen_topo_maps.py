@@ -1,3 +1,7 @@
+'''
+	generate topological map vertices and edges given an occupancy map
+'''
+
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -5,9 +9,11 @@ from topo_map.img_to_skeleton import img2skeleton
 from topo_map.skeleton_to_topoMap import skeleton2topoMap
 from topo_map.utils import drawtoposkele_with_VE,  build_VE_from_graph
 
+scene_id = 1
+scene_list = ['Rs_int', 'Beechwood_0_int']
+scene = scene_list[scene_id]
 
-scene = 'Rs_int'
-saved_folder = '/home/yimeng/Datasets/iGibson/my_data/scene_Rs'
+saved_folder = '/home/yimeng/Datasets/iGibson/my_data/{}'.format(scene)
 
 print('scene = {}'.format(scene))
 gray1, gau1, skeleton = img2skeleton('{}/{}/layout/{}.png'.format(

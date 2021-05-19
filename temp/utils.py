@@ -297,3 +297,17 @@ def apply_color_to_pointCloud (sseg_points, num_classes=41):
   for i in range(num_classes):
     color_sseg_points[sseg_points==i] = d3_41_colors_rgb[i]
   return color_sseg_points
+
+def create_folder (folder_name, clean_up=False):
+  flag_exist = os.path.isdir(folder_name)
+  if not flag_exist:
+    print('{} folder does not exist, so create one.'.format(folder_name))
+    os.makedirs(folder_name)
+    #os.makedirs(os.path.join(test_case_folder, 'observations'))
+  else:
+    print('{} folder already exists, so do nothing.'.format(folder_name))
+
+  if clean_up:
+    os.system('rm {}/*.png'.format(folder_name))
+    os.system('rm {}/*.npy'.format(folder_name))
+    os.system('rm {}/*.jpg'.format(folder_name))

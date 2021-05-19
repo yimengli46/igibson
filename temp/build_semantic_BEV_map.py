@@ -1,23 +1,34 @@
+'''
+build top-down-view semantic map from depth and sseg egocentric observations.
+'''
+
 import numpy as np
 import numpy.linalg as LA
 import cv2
 import matplotlib.pyplot as plt
 import math
 from math import cos, sin, acos, atan2, pi, floor
-from baseline_utils import project_pixels_to_world_coords, convertInsSegToSSeg, apply_color_to_map
+from utils import project_pixels_to_world_coords, convertInsSegToSSeg, apply_color_to_map, create_folder
 
 
-dataset_dir = '/home/yimeng/Datasets/iGibson/my_data/'
-scene_name = 'scene_Rs'
+scene_id = 1
+scene_list = ['Rs_int', 'Beechwood_0_int']
+scene = scene_list[scene_id]
+
+dataset_dir = '/home/yimeng/Datasets/iGibson/my_data'
 cell_size = 0.1
 trav_map_cell_size = 0.01
 proportion_cell_size = round(trav_map_cell_size / cell_size, 2)
-num_classes = 63
+
+class_mapper = np.load('{}/{}/class_mapper.npy'.format(dataset_dir, scene), allow_pickle=True).item()
+num_classes = class_mapper[list(class_mapper.keys())[-1]] + 1
 max_height = 5.0 # maximum height is 5.0 meter
 
 #UNIGNORED_CLASS = [3, 4, 6, 7, 8, 9, 10]
-saved_folder = '{}/{}/sem_occupancy_map_results'.format(dataset_dir, scene_name)
-step_size = 10
+saved_folder = '{}/{}/sem_occupancy_map_results'.format(dataset_dir, scene)
+create_folder(saved_folder, clean_up=True)
+
+step_size = 50
 map_boundary = 10
 
 IGNORED_CLASS = [5]
@@ -28,22 +39,22 @@ for i in range(41):
 '''
 
 # load img list
-poses_list = np.load('{}/{}/poses.npy'.format(dataset_dir, scene_name), allow_pickle=True)
+poses_list = np.load('{}/{}/poses.npy'.format(dataset_dir, scene), allow_pickle=True)
 img_names = list(range(poses_list.shape[0]))
 
-cat_dict = np.load('{}/{}/class_mapper.npy'.format(dataset_dir, scene_name), allow_pickle=True).item()
+cat_dict = np.load('{}/{}/class_mapper.npy'.format(dataset_dir, scene), allow_pickle=True).item()
 
 # decide size of the grid
 trav_map = cv2.imread('{}/{}/layout/{}.png'.format(
 	'/home/yimeng/Datasets/iGibson/gibson2/data/ig_dataset/scenes',
-	'Rs_int',
+	scene,
 	'floor_trav_0'), 0)
 H, W = trav_map.shape
 min_X = -(W/2)*trav_map_cell_size
 max_X = (W/2)*trav_map_cell_size
 min_Z = -(H/2)*trav_map_cell_size
 max_Z = (H/2)*trav_map_cell_size
-four_dim_grid = np.zeros((int(H*proportion_cell_size), int(max_height/cell_size), int(W*proportion_cell_size), 63), dtype=np.int32) # x, y, z, C
+four_dim_grid = np.zeros((int(H*proportion_cell_size), int(max_height/cell_size), int(W*proportion_cell_size), num_classes), dtype=np.int32) # x, y, z, C
 H, W = four_dim_grid.shape[0], four_dim_grid.shape[2]
 
 
@@ -53,9 +64,9 @@ for idx, img_name in enumerate(img_names):
 
 	print('idx = {}'.format(idx))
 	# load rgb image, depth and sseg
-	rgb_img = cv2.imread('{}/{}/rgb/{}_rgb.png'.format(dataset_dir, scene_name, img_name), 1)[:, :, ::-1]
-	depth_img = np.load('{}/{}/depth/{}_depth.npy'.format(dataset_dir, scene_name, img_name), allow_pickle=True)
-	sseg_img = cv2.imread('{}/{}/sseg/{}_sseg.png'.format(dataset_dir, scene_name, img_name), 0)
+	rgb_img = cv2.imread('{}/{}/rgb/{}_rgb.png'.format(dataset_dir, scene, img_name), 1)[:, :, ::-1]
+	depth_img = np.load('{}/{}/depth/{}_depth.npy'.format(dataset_dir, scene, img_name), allow_pickle=True)
+	sseg_img = cv2.imread('{}/{}/sseg/{}_sseg.png'.format(dataset_dir, scene, img_name), 0)
 	
 	pose = poses_list[img_name] # x, z, theta
 	print('pose = {}'.format(pose))
@@ -114,6 +125,11 @@ for idx, img_name in enumerate(img_names):
 	if idx % step_size == 0:
 		color_semantic_map = cv2.resize(color_semantic_map, (int(H/proportion_cell_size), int(W/proportion_cell_size)), interpolation = cv2.INTER_NEAREST)
 		cv2.imwrite('{}/step_{}_semantic.jpg'.format(saved_folder, idx), color_semantic_map[:,:,::-1])
+
+# save final color_semantic_map and semantic_map
+color_semantic_map = apply_color_to_map(semantic_map, num_classes=num_classes)
+color_semantic_map = cv2.resize(color_semantic_map, (int(H/proportion_cell_size), int(W/proportion_cell_size)), interpolation = cv2.INTER_NEAREST)
+cv2.imwrite('{}/step_{}_semantic.jpg'.format(saved_folder, idx), color_semantic_map[:,:,::-1])
 
 semantic_map = semantic_map.astype('uint')
 semantic_map = cv2.resize(semantic_map, (int(H/proportion_cell_size), int(W/proportion_cell_size)), interpolation = cv2.INTER_NEAREST)

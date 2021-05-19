@@ -1,3 +1,7 @@
+'''
+	generate egocentric rgb, depth, sseg given an occupancy map
+'''
+
 from gibson2.envs.igibson_env import iGibsonEnv
 import argparse
 import numpy as np
@@ -6,10 +10,20 @@ from gibson2.scenes.igibson_indoor_scene import InteractiveIndoorScene
 import matplotlib.pyplot as plt
 from math import pi
 import cv2
+from utils import create_folder
 
-scene = 'Rs_int'
+scene_id = 0
+scene_list = ['Rs_int', 'Beechwood_0_int', 'Beechwood_1_int', 'Benevolence_0_int', 'Benevolence_1_int', 
+	'Benevolence_2_int', 'Ihlen_0_int', 'Ihlen_1_int', 'Merom_0_int', 'Merom_1_int', 'Pomaria_0_int', 
+	'Pomaria_1_int', 'Pomaria_2_int', 'Wainscott_0_int', 'Wainscott_1_int']
+scene = scene_list[scene_id]
+
 theta_lst = [0, pi/2, pi, 1.5*pi]
-saved_folder = '/home/yimeng/Datasets/iGibson/my_data/scene_Rs'
+saved_folder = '/home/yimeng/Datasets/iGibson/my_data/{}'.format(scene)
+create_folder(saved_folder)
+create_folder('{}/rgb'.format(saved_folder), clean_up=True)
+create_folder('{}/depth'.format(saved_folder), clean_up=True)
+create_folder('{}/sseg'.format(saved_folder), clean_up=True)
 
 # load trav_map
 trav_map = cv2.imread('{}/{}/layout/{}.png'.format(
@@ -29,7 +43,7 @@ assert x_coord.shape[0] == y_coord.shape[0]
 
 # generate observations
 mode = 'headless'
-config = '/home/yimeng/Datasets/iGibson/my_code/configs/my_config.yaml'
+config = '/home/yimeng/Datasets/iGibson/my_code/configs/config_{}.yaml'.format(scene)
 nav_env = iGibsonEnv(config_file=config,
                      mode=mode,
                      action_timestep=1.0 / 120.0,
@@ -86,5 +100,5 @@ np.save('{}/poses.npy'.format(saved_folder), poses)
 
 from gibson2.utils.semantics_utils import get_class_name_to_class_id
 dict_class2id = get_class_name_to_class_id()
-dict_class2id['walls'] == 3
+dict_class2id['walls'] = 3
 np.save('{}/class_mapper.npy'.format(saved_folder), dict_class2id)

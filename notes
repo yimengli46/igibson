@@ -1,0 +1,8 @@
+Use env 'igibson'.
+
+Folder temp:
+	gen_observations.py: generate egocentric rgb, depth, sseg given an occupancy map.
+	gen_topo_maps.py: generate topological map vertices and edges given an occupancy map.
+	build_semantic_BEV_map.py: build top-down-view semantic map from depth and sseg egocentric observations.
+	gen_semantic_topo_map.py: combine topological map with semantic map.
+	 

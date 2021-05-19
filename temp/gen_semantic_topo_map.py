@@ -1,14 +1,23 @@
+'''
+combine topological map with semantic map.
+'''
+
 import numpy as np
 import matplotlib.pyplot as plt
 import os
 import cv2
-from baseline_utils import apply_color_to_map
+from utils import apply_color_to_map
 import skimage.measure
 from math import floor
 
-scene = 'Rs_int'
-saved_folder = '/home/yimeng/Datasets/iGibson/my_data/scene_Rs'
-num_classes = 63
+scene_id = 1
+scene_list = ['Rs_int', 'Beechwood_0_int']
+scene = scene_list[scene_id]
+
+saved_folder = '/home/yimeng/Datasets/iGibson/my_data/{}'.format(scene)
+
+cat_dict = np.load('{}/class_mapper.npy'.format(saved_folder), allow_pickle=True).item()
+num_classes = cat_dict[list(cat_dict.keys())[-1]] + 1
 
 
 #======================================== load scene occupancy map ====================================
@@ -54,7 +63,6 @@ fig.tight_layout()
 #'''
 
 #====================================== compute centers of semantic classes =====================================
-cat_dict = np.load('{}/class_mapper.npy'.format(saved_folder), allow_pickle=True).item()
 idx2cat_dict = {v: k for k, v in cat_dict.items()}
 IGNORED_CLASS = [0,1,2, 3,4,5]
 cat_binary_map = semantic_occupancy_map.copy()
@@ -71,7 +79,7 @@ for idx_ins in range(1, num_ins+1):
 		x_coords = xv[mask_ins]
 		y_coords = yv[mask_ins]
 		ins_center = (floor(np.median(x_coords)), floor(np.median(y_coords)))
-		ins_cat = semantic_occupancy_map[ins_center[1], ins_center[0]]
+		ins_cat = semantic_occupancy_map[int(y_coords[0]), int(x_coords[0])]
 		ins = {}
 		ins['center'] = ins_center
 		ins['cat'] = ins_cat
@@ -94,7 +102,10 @@ for ins in list_instances:
 	ax.plot([center[0], vertex[0]], [center[1], vertex[1]], 
             'k-', lw=1)
 
-	cat_name = idx2cat_dict[cat]
+	try:
+		cat_name = idx2cat_dict[cat]
+	except:
+		cat_name = 'unknown'
 	ax.text(center[0], center[1], cat_name)
 
 ax.scatter(x=x, y=y, c='b', s=5)
