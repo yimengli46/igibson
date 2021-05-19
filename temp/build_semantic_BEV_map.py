@@ -11,7 +11,7 @@ from math import cos, sin, acos, atan2, pi, floor
 from utils import project_pixels_to_world_coords, convertInsSegToSSeg, apply_color_to_map, create_folder
 
 
-scene_id = 1
+scene_id = 0
 scene_list = ['Rs_int', 'Beechwood_0_int']
 scene = scene_list[scene_id]
 

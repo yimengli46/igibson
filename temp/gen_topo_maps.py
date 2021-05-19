@@ -9,7 +9,7 @@ from topo_map.img_to_skeleton import img2skeleton
 from topo_map.skeleton_to_topoMap import skeleton2topoMap
 from topo_map.utils import drawtoposkele_with_VE,  build_VE_from_graph
 
-scene_id = 1
+scene_id = 0
 scene_list = ['Rs_int', 'Beechwood_0_int']
 scene = scene_list[scene_id]
 

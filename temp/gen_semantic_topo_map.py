@@ -10,7 +10,7 @@ from utils import apply_color_to_map
 import skimage.measure
 from math import floor
 
-scene_id = 1
+scene_id = 0
 scene_list = ['Rs_int', 'Beechwood_0_int']
 scene = scene_list[scene_id]
 
