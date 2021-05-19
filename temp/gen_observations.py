@@ -13,13 +13,15 @@ import cv2
 from utils import create_folder
 
 scene_id = 0
+igibson_folder = '/home/yimeng/Datasets/iGibson'
+
 scene_list = ['Rs_int', 'Beechwood_0_int', 'Beechwood_1_int', 'Benevolence_0_int', 'Benevolence_1_int', 
 	'Benevolence_2_int', 'Ihlen_0_int', 'Ihlen_1_int', 'Merom_0_int', 'Merom_1_int', 'Pomaria_0_int', 
 	'Pomaria_1_int', 'Pomaria_2_int', 'Wainscott_0_int', 'Wainscott_1_int']
 scene = scene_list[scene_id]
 
 theta_lst = [0, pi/2, pi, 1.5*pi]
-saved_folder = '/home/yimeng/Datasets/iGibson/my_data/{}'.format(scene)
+saved_folder = '{}/my_data/{}'.format(igibson_folder, scene)
 create_folder(saved_folder)
 create_folder('{}/rgb'.format(saved_folder), clean_up=True)
 create_folder('{}/depth'.format(saved_folder), clean_up=True)
@@ -27,7 +29,7 @@ create_folder('{}/sseg'.format(saved_folder), clean_up=True)
 
 # load trav_map
 trav_map = cv2.imread('{}/{}/layout/{}.png'.format(
-	'/home/yimeng/Datasets/iGibson/gibson2/data/ig_dataset/scenes',
+	'{}/gibson2/data/ig_dataset/scenes'.format(igibson_folder),
 	scene,
 	'floor_trav_0_occupancy'), 0)
 H, W = trav_map.shape
@@ -43,7 +45,7 @@ assert x_coord.shape[0] == y_coord.shape[0]
 
 # generate observations
 mode = 'headless'
-config = '/home/yimeng/Datasets/iGibson/my_code/configs/config_{}.yaml'.format(scene)
+config = '{}/my_code/configs/config_{}.yaml'.format(igibson_folder, scene)
 nav_env = iGibsonEnv(config_file=config,
                      mode=mode,
                      action_timestep=1.0 / 120.0,
