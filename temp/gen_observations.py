@@ -21,15 +21,15 @@ scene_list = ['Rs_int', 'Beechwood_0_int', 'Beechwood_1_int', 'Benevolence_0_int
 scene = scene_list[scene_id]
 
 theta_lst = [0, pi/2, pi, 1.5*pi]
-saved_folder = '{}/my_data/{}'.format(igibson_folder, scene)
+saved_folder = f'{igibson_folder}/my_data/{scene}'
 create_folder(saved_folder)
-create_folder('{}/rgb'.format(saved_folder), clean_up=True)
-create_folder('{}/depth'.format(saved_folder), clean_up=True)
-create_folder('{}/sseg'.format(saved_folder), clean_up=True)
+create_folder(f'{saved_folder}/rgb', clean_up=True)
+create_folder(f'{saved_folder}/depth', clean_up=True)
+create_folder(f'{saved_folder}/sseg', clean_up=True)
 
 # load trav_map
 trav_map = cv2.imread('{}/{}/layout/{}.png'.format(
-	'{}/gibson2/data/ig_dataset/scenes'.format(igibson_folder),
+	f'{igibson_folder}/gibson2/data/ig_dataset/scenes',
 	scene,
 	'floor_trav_0_occupancy'), 0)
 H, W = trav_map.shape
@@ -45,7 +45,7 @@ assert x_coord.shape[0] == y_coord.shape[0]
 
 # generate observations
 mode = 'headless'
-config = '{}/my_code/configs/config_{}.yaml'.format(igibson_folder, scene)
+config = f'{igibson_folder}/my_code/configs/config_{scene}.yaml'
 nav_env = iGibsonEnv(config_file=config,
                      mode=mode,
                      action_timestep=1.0 / 120.0,
@@ -59,7 +59,7 @@ count = 0
 # 30 means 30*0.01m = 0.3m
 for i in range(0, x_coord.shape[0], 30):
 	for j in range(0, x_coord.shape[1], 30):
-		print('i = {}, j = {}'.format(i, j))
+		print(f'i = {i}, j = {j}')
 		camera_pose = np.array([x_coord[i][j], y_coord[i][j], 0.0])
 		#flag_free = nav_env.test_valid_position(nav_env.robots[0], camera_pose)
 		flag_free = (trav_map[i][j] > 0)
@@ -83,9 +83,9 @@ for i in range(0, x_coord.shape[0], 30):
 					depth = depth * 50.0
 					sseg = (sseg[:,:,0]*255).astype('uint')
 
-					cv2.imwrite('{}/rgb/{}_rgb.png'.format(saved_folder, count), img[:,:,::-1])
-					np.save('{}/depth/{}_depth.npy'.format(saved_folder, count), depth)
-					cv2.imwrite('{}/sseg/{}_sseg.png'.format(saved_folder, count), sseg)
+					cv2.imwrite(f'{saved_folder}/rgb/{count}_rgb.png', img[:,:,::-1])
+					np.save(f'{saved_folder}/depth/{count}_depth.npy', depth)
+					cv2.imwrite(f'{saved_folder}/sseg/{count}_sseg.png', sseg)
 				
 					count += 1
 
@@ -97,10 +97,10 @@ for i in range(0, x_coord.shape[0], 30):
 					#assert 1==2
 
 poses = np.array(poses)
-np.save('{}/poses.npy'.format(saved_folder), poses)
+np.save(f'{saved_folder}/poses.npy', poses)
 
 
 from gibson2.utils.semantics_utils import get_class_name_to_class_id
 dict_class2id = get_class_name_to_class_id()
 dict_class2id['walls'] = 3
-np.save('{}/class_mapper.npy'.format(saved_folder), dict_class2id)
+np.save(f'{saved_folder}/class_mapper.npy', dict_class2id)

@@ -11,19 +11,23 @@ import skimage.measure
 from math import floor
 
 scene_id = 0
-scene_list = ['Rs_int', 'Beechwood_0_int']
+igibson_folder = '/home/yimeng/Datasets/iGibson'
+
+scene_list = ['Rs_int', 'Beechwood_0_int', 'Beechwood_1_int', 'Benevolence_0_int', 'Benevolence_1_int', 
+	'Benevolence_2_int', 'Ihlen_0_int', 'Ihlen_1_int', 'Merom_0_int', 'Merom_1_int', 'Pomaria_0_int', 
+	'Pomaria_1_int', 'Pomaria_2_int', 'Wainscott_0_int', 'Wainscott_1_int']
 scene = scene_list[scene_id]
 
-saved_folder = '/home/yimeng/Datasets/iGibson/my_data/{}'.format(scene)
+saved_folder = f'{igibson_folder}/my_data/{scene}'
 
-cat_dict = np.load('{}/class_mapper.npy'.format(saved_folder), allow_pickle=True).item()
+cat_dict = np.load(f'{saved_folder}/class_mapper.npy', allow_pickle=True).item()
 num_classes = cat_dict[list(cat_dict.keys())[-1]] + 1
 
 
 #======================================== load scene occupancy map ====================================
 # load trav_map
 occupancy_map = cv2.imread('{}/{}/layout/{}.png'.format(
-	'/home/yimeng/Datasets/iGibson/gibson2/data/ig_dataset/scenes',
+	f'{igibson_folder}/gibson2/data/ig_dataset/scenes',
 	scene,
 	'floor_trav_0_occupancy'), 0)
 H, W = occupancy_map.shape
@@ -32,7 +36,7 @@ y = np.linspace(0, H-1, H)
 xv, yv = np.meshgrid(x, y)
 
 #======================================== load the semantic map =======================================
-semantic_map = cv2.imread('{}/sem_occupancy_map_results/BEV_semantic_map.png'.format(saved_folder), 0)
+semantic_map = cv2.imread(f'{saved_folder}/sem_occupancy_map_results/BEV_semantic_map.png', 0)
 
 semantic_occupancy_map = occupancy_map.copy()
 semantic_occupancy_map[semantic_occupancy_map == 255] = 1 # change free space into label 1
@@ -40,7 +44,7 @@ mask_semantics = np.logical_and(semantic_map > 0, semantic_map != 4) # 0 is back
 semantic_occupancy_map[mask_semantics] = semantic_map[mask_semantics]
 
 #======================================== load the topo map ==========================================
-topo_V_E = np.load('{}/v_and_e.npy'.format(saved_folder), allow_pickle=True).item()
+topo_V_E = np.load(f'{saved_folder}/v_and_e.npy', allow_pickle=True).item()
 v_lst, e_lst = topo_V_E['vertices'], topo_V_E['edges']
 
 color_semantic_map = apply_color_to_map(semantic_occupancy_map, num_classes=num_classes)
@@ -75,7 +79,7 @@ list_instances = []
 for idx_ins in range(1, num_ins+1):
 	mask_ins = (instance_label==idx_ins)
 	if np.sum(mask_ins) > 50: # should have at least 50 pixels
-		print('idx_ins = {}'.format(idx_ins))
+		print(f'idx_ins = {idx_ins}')
 		x_coords = xv[mask_ins]
 		y_coords = yv[mask_ins]
 		ins_center = (floor(np.median(x_coords)), floor(np.median(y_coords)))
@@ -113,6 +117,6 @@ ax.scatter(x=x, y=y, c='b', s=5)
 #assert 1==2
 ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
-fig.savefig('{}/topo_semantic_map.png'.format(saved_folder))
+fig.savefig(f'{saved_folder}/topo_semantic_map.png')
 plt.close()
 #plt.show() 

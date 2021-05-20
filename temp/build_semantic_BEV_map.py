@@ -12,20 +12,24 @@ from utils import project_pixels_to_world_coords, convertInsSegToSSeg, apply_col
 
 
 scene_id = 0
-scene_list = ['Rs_int', 'Beechwood_0_int']
+igibson_folder = '/home/yimeng/Datasets/iGibson'
+
+scene_list = ['Rs_int', 'Beechwood_0_int', 'Beechwood_1_int', 'Benevolence_0_int', 'Benevolence_1_int', 
+	'Benevolence_2_int', 'Ihlen_0_int', 'Ihlen_1_int', 'Merom_0_int', 'Merom_1_int', 'Pomaria_0_int', 
+	'Pomaria_1_int', 'Pomaria_2_int', 'Wainscott_0_int', 'Wainscott_1_int']
 scene = scene_list[scene_id]
 
-dataset_dir = '/home/yimeng/Datasets/iGibson/my_data'
+dataset_dir = f'{igibson_folder}/my_data'
 cell_size = 0.1
 trav_map_cell_size = 0.01
 proportion_cell_size = round(trav_map_cell_size / cell_size, 2)
 
-class_mapper = np.load('{}/{}/class_mapper.npy'.format(dataset_dir, scene), allow_pickle=True).item()
+class_mapper = np.load(f'{dataset_dir}/{scene}/class_mapper.npy', allow_pickle=True).item()
 num_classes = class_mapper[list(class_mapper.keys())[-1]] + 1
 max_height = 5.0 # maximum height is 5.0 meter
 
 #UNIGNORED_CLASS = [3, 4, 6, 7, 8, 9, 10]
-saved_folder = '{}/{}/sem_occupancy_map_results'.format(dataset_dir, scene)
+saved_folder = f'{dataset_dir}/{scene}/sem_occupancy_map_results'
 create_folder(saved_folder, clean_up=True)
 
 step_size = 50
@@ -39,14 +43,14 @@ for i in range(41):
 '''
 
 # load img list
-poses_list = np.load('{}/{}/poses.npy'.format(dataset_dir, scene), allow_pickle=True)
+poses_list = np.load(f'{dataset_dir}/{scene}/poses.npy', allow_pickle=True)
 img_names = list(range(poses_list.shape[0]))
 
-cat_dict = np.load('{}/{}/class_mapper.npy'.format(dataset_dir, scene), allow_pickle=True).item()
+cat_dict = np.load(f'{dataset_dir}/{scene}/class_mapper.npy', allow_pickle=True).item()
 
 # decide size of the grid
 trav_map = cv2.imread('{}/{}/layout/{}.png'.format(
-	'/home/yimeng/Datasets/iGibson/gibson2/data/ig_dataset/scenes',
+	f'{igibson_folder}/gibson2/data/ig_dataset/scenes',
 	scene,
 	'floor_trav_0'), 0)
 H, W = trav_map.shape
@@ -64,12 +68,12 @@ for idx, img_name in enumerate(img_names):
 
 	print('idx = {}'.format(idx))
 	# load rgb image, depth and sseg
-	rgb_img = cv2.imread('{}/{}/rgb/{}_rgb.png'.format(dataset_dir, scene, img_name), 1)[:, :, ::-1]
-	depth_img = np.load('{}/{}/depth/{}_depth.npy'.format(dataset_dir, scene, img_name), allow_pickle=True)
-	sseg_img = cv2.imread('{}/{}/sseg/{}_sseg.png'.format(dataset_dir, scene, img_name), 0)
+	rgb_img = cv2.imread(f'{dataset_dir}/{scene}/rgb/{img_name}_rgb.png', 1)[:, :, ::-1]
+	depth_img = np.load(f'{dataset_dir}/{scene}/depth/{img_name}_depth.npy', allow_pickle=True)
+	sseg_img = cv2.imread(f'{dataset_dir}/{scene}/sseg/{img_name}_sseg.png', 0)
 	
 	pose = poses_list[img_name] # x, z, theta
-	print('pose = {}'.format(pose))
+	print(f'pose = {pose}')
 
 	if idx % step_size == 0:
 		#'''
@@ -88,7 +92,7 @@ for idx, img_name in enumerate(img_names):
 		ax[2].set_title("depth")
 		fig.tight_layout()
 		#plt.show()
-		fig.savefig('{}/step_{}.jpg'.format(saved_folder, idx))
+		fig.savefig(f'{saved_folder}/step_{idx}.jpg')
 		plt.close()
 		#assert 1==2
 		#'''
@@ -124,13 +128,13 @@ for idx, img_name in enumerate(img_names):
 
 	if idx % step_size == 0:
 		color_semantic_map = cv2.resize(color_semantic_map, (int(H/proportion_cell_size), int(W/proportion_cell_size)), interpolation = cv2.INTER_NEAREST)
-		cv2.imwrite('{}/step_{}_semantic.jpg'.format(saved_folder, idx), color_semantic_map[:,:,::-1])
+		cv2.imwrite(f'{saved_folder}/step_{idx}_semantic.jpg', color_semantic_map[:,:,::-1])
 
 # save final color_semantic_map and semantic_map
 color_semantic_map = apply_color_to_map(semantic_map, num_classes=num_classes)
 color_semantic_map = cv2.resize(color_semantic_map, (int(H/proportion_cell_size), int(W/proportion_cell_size)), interpolation = cv2.INTER_NEAREST)
-cv2.imwrite('{}/step_{}_semantic.jpg'.format(saved_folder, idx), color_semantic_map[:,:,::-1])
+cv2.imwrite(f'{saved_folder}/step_{idx}_semantic.jpg', color_semantic_map[:,:,::-1])
 
 semantic_map = semantic_map.astype('uint')
 semantic_map = cv2.resize(semantic_map, (int(H/proportion_cell_size), int(W/proportion_cell_size)), interpolation = cv2.INTER_NEAREST)
-cv2.imwrite('{}/BEV_semantic_map.png'.format(saved_folder), semantic_map)
+cv2.imwrite(f'{saved_folder}/BEV_semantic_map.png', semantic_map)
