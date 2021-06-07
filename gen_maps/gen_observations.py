@@ -41,7 +41,7 @@ for scene_id in range(0, 15):
 	x = np.linspace(0, W-1, W)
 	y = np.linspace(0, H-1, H)
 	xv, yv = np.meshgrid(x, y)
-	# map resolution is 1pixel per 0.1m
+	# map resolution is 1pixel per 0.01m
 	x_coord = ((xv - W/2)*0.01)
 	y_coord = ((yv - H/2)*0.01)
 	assert x_coord.shape[0] == y_coord.shape[0]
@@ -82,9 +82,9 @@ for scene_id in range(0, 15):
 					h, w = img.shape[:2]
 					
 					if sum_img > h*w*0.75:
-						img = (img*255).astype('uint')
+						img = (img*255).astype('uint8')
 						depth = depth * 50.0
-						sseg = (sseg[:,:,0]*255).astype('uint')
+						sseg = (sseg[:,:,0]*255).astype('uint8')
 
 						cv2.imwrite(f'{saved_folder}/rgb/{count}_rgb.png', img[:,:,::-1])
 						np.save(f'{saved_folder}/depth/{count}_depth.npy', depth)
